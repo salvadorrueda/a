@@ -3,11 +3,37 @@
 import argparse
 import json
 import os
-import subprocess
+import shutil
+import stat
 import sys
 
 SCRIPT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Scripts")
 TASKS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tasks.json")
+
+
+def ensure_script_dir():
+    os.makedirs(SCRIPT_DIR, exist_ok=True)
+
+
+def make_executable(path):
+    current_mode = os.stat(path).st_mode
+    os.chmod(path, current_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+
+
+def resolve_script_source(script):
+    expanded_path = os.path.abspath(os.path.expanduser(script))
+    if os.path.isfile(expanded_path):
+        return expanded_path
+
+    stored_path = os.path.join(SCRIPT_DIR, script)
+    if os.path.isfile(stored_path):
+        return stored_path
+
+    stored_basename_path = os.path.join(SCRIPT_DIR, os.path.basename(script))
+    if os.path.isfile(stored_basename_path):
+        return stored_basename_path
+
+    return None
 
 
 def load_tasks():
@@ -23,14 +49,24 @@ def save_tasks(tasks):
 
 
 def add_task(script, keyword):
-    path = os.path.join(SCRIPT_DIR, script)
-    if not os.path.isfile(path):
-        print(f"Error: no se encuentra el script '{script}' en {SCRIPT_DIR}")
+    source_path = resolve_script_source(script)
+    if source_path is None:
+        print(f"Error: no se encuentra el script '{script}'")
         sys.exit(1)
+
+    ensure_script_dir()
+    stored_script = os.path.basename(source_path)
+    stored_path = os.path.join(SCRIPT_DIR, stored_script)
+
+    if os.path.abspath(source_path) != os.path.abspath(stored_path):
+        shutil.copy2(source_path, stored_path)
+
+    make_executable(stored_path)
+
     tasks = load_tasks()
-    tasks[keyword] = script
+    tasks[keyword] = stored_script
     save_tasks(tasks)
-    print(f"Tarea añadida: '{keyword}' -> {script}")
+    print(f"Tarea añadida: '{keyword}' -> {stored_script}")
 
 
 def remove_task(keyword):
