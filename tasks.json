@@ -10,5 +10,9 @@
   "actualitza": {
     "script": "update_upgrade.sh",
     "info": "Actualitza i upgrade del sistema"
+  },
+  "matrix": {
+    "script": "launch_vu01_remotely.sh",
+    "info": "Executa matrix en u01.local que inicia la mv vu01"
   }
 }
