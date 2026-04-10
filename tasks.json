@@ -14,5 +14,13 @@
   "matrix": {
     "script": "launch_vu01_remotely.sh",
     "info": "Executa matrix en u01.local que inicia la mv vu01"
+  },
+  "atura_matrix": {
+    "script": "atura_vu01.sh",
+    "info": "Atura màquina virtual vu01"
+  },
+  "atura_u01": {
+    "script": "atura_u01.sh",
+    "info": "Atura la màquina u01"
   }
 }
