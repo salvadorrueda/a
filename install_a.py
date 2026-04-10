@@ -101,12 +101,12 @@ def install_bash_completion():
     cmd="${{COMP_WORDS[1]}}"
 
     if [[ $COMP_CWORD -eq 1 ]]; then
-        COMPREPLY=( $(compgen -W "add list remove run" -- "$cur") )
+        COMPREPLY=( $(compgen -W "add list remove run info" -- "$cur") )
         return
     fi
 
     case "$cmd" in
-        run|remove)
+        run|remove|info)
             local tasks
             tasks="$(python3 - <<'PY'
 import json

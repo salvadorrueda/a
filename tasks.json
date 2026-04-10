@@ -1,4 +1,14 @@
 {
-  "vm": "launch_vu01.sh",
-  "actualitza_git": "git_add_commit_push.sh"
+  "vm": {
+    "script": "launch_vu01.sh",
+    "info": "Inicia la màquina virtual vu01"
+  },
+  "actualitza_git": {
+    "script": "git_add_commit_push.sh",
+    "info": "Fa add, commit i push del repositori"
+  },
+  "actualitza": {
+    "script": "update_upgrade.sh",
+    "info": "Actualitza i upgrade del sistema"
+  }
 }
