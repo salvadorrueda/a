@@ -10,9 +10,11 @@ REPO_DIR = os.path.dirname(os.path.abspath(__file__))
 
 BIN_DIR = os.path.expanduser("~/.local/bin")
 DATA_DIR = os.path.expanduser("~/.local/share/a")
+BASH_COMPLETION_DIR = os.path.expanduser("~/.local/share/bash-completion/completions")
 SCRIPTS_DST = os.path.join(DATA_DIR, "Scripts")
 TASKS_DST = os.path.join(DATA_DIR, "tasks.json")
 BIN_DST = os.path.join(BIN_DIR, "a")
+BASH_COMPLETION_DST = os.path.join(BASH_COMPLETION_DIR, "a")
 
 SCRIPTS_SRC = os.path.join(REPO_DIR, "Scripts")
 TASKS_SRC = os.path.join(REPO_DIR, "tasks.json")
@@ -91,6 +93,57 @@ def install_tasks():
         print("  Es manté el tasks.json local (sense canvis).")
 
 
+def install_bash_completion():
+        os.makedirs(BASH_COMPLETION_DIR, exist_ok=True)
+        completion = f'''_a_complete() {{
+    local cur cmd
+    cur="${{COMP_WORDS[COMP_CWORD]}}"
+    cmd="${{COMP_WORDS[1]}}"
+
+    if [[ $COMP_CWORD -eq 1 ]]; then
+        COMPREPLY=( $(compgen -W "add list remove run" -- "$cur") )
+        return
+    fi
+
+    case "$cmd" in
+        run|remove)
+            local tasks
+            tasks="$(python3 - <<'PY'
+import json
+import os
+
+path = os.path.expanduser("{TASKS_DST}")
+try:
+        with open(path, encoding="utf-8") as f:
+                data = json.load(f)
+        if isinstance(data, dict):
+                print(" ".join(data.keys()))
+except Exception:
+        pass
+PY
+            )"
+            COMPREPLY=( $(compgen -W "$tasks" -- "$cur") )
+            return
+            ;;
+        add)
+            if [[ $COMP_CWORD -eq 2 ]]; then
+                COMPREPLY=( $(compgen -f -- "$cur") )
+                return
+            fi
+            ;;
+    esac
+}}
+
+complete -o default -F _a_complete a
+'''
+
+        with open(BASH_COMPLETION_DST, "w") as f:
+                f.write(completion)
+
+        print(f"  Bash completion instal·lat: {BASH_COMPLETION_DST}")
+        print("  Per activar-lo ara: source ~/.local/share/bash-completion/completions/a")
+
+
 def check_path():
     path_dirs = os.environ.get("PATH", "").split(":")
     if BIN_DIR not in path_dirs:
@@ -107,6 +160,7 @@ def main():
     install_main_script()
     install_scripts()
     install_tasks()
+    install_bash_completion()
     check_path()
     print()
     print("Instal·lació completada. Ara pots usar 'a' des de qualsevol terminal.")
