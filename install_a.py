@@ -4,6 +4,7 @@ import os
 import shutil
 import stat
 import sys
+from datetime import datetime
 
 REPO_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -63,11 +64,31 @@ def install_scripts():
 
 
 def install_tasks():
-    if os.path.exists(TASKS_SRC):
+    if not os.path.exists(TASKS_SRC):
+        print("  No s'ha trobat tasks.json, es crearà quan s'afegeixi la primera tasca.")
+        return
+
+    if not os.path.exists(TASKS_DST):
         shutil.copy2(TASKS_SRC, TASKS_DST)
         print(f"  Tasques copiades: {TASKS_DST}")
+        return
+
+    backup = f"{TASKS_DST}.bak.{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    shutil.copy2(TASKS_DST, backup)
+    print(f"  Backup creat: {backup}")
+
+    update_tasks = False
+    if sys.stdin.isatty():
+        reply = input("  Ja existeix tasks.json. Vols actualitzar-lo amb la versió del repositori? [s/N]: ").strip().lower()
+        update_tasks = reply in {"s", "si", "sí", "y", "yes"}
     else:
-        print("  No s'ha trobat tasks.json, es crearà quan s'afegeixi la primera tasca.")
+        print("  Entorn no interactiu: es manté el tasks.json local.")
+
+    if update_tasks:
+        shutil.copy2(TASKS_SRC, TASKS_DST)
+        print(f"  Tasques actualitzades: {TASKS_DST}")
+    else:
+        print("  Es manté el tasks.json local (sense canvis).")
 
 
 def check_path():
