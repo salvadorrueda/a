@@ -22,5 +22,9 @@
   "atura_u01": {
     "script": "atura_u01.sh",
     "info": "Atura la màquina u01"
+  },
+  "atura_d00": {
+    "script": "atura_d00.sh",
+    "info": "Atura la màquina d00"
   }
 }
