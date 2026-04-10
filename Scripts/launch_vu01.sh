@@ -10,7 +10,7 @@ usage() {
   ./launch_vu01.sh [--headless]
 
 Aquest script inicia la màquina virtual "vu01" assignant-li la meitat de la RAM
-disponible al sistema.
+disponible al sistema i configurant les interfícies de xarxa físiques (Ethernet i WiFi) en mode pont.
 
 Opcions:
   --headless   Inicia la màquina virtual sense interfície gràfica (mode headless).
@@ -19,7 +19,7 @@ EOF
 
 require_commands() {
     local command
-    for command in VBoxManage awk grep; do
+    for command in VBoxManage awk grep sed; do
         if ! command -v "$command" >/dev/null 2>&1; then
             echo "Falta el comandament requerit: $command" >&2
             exit 1
@@ -54,6 +54,43 @@ set_vm_memory() {
     local ram_mb="${1}"
     echo "Configurant la RAM de '${VM_NAME}' a ${ram_mb} MB..."
     VBoxManage modifyvm "${VM_NAME}" --memory "${ram_mb}"
+}
+
+configure_bridged_networks() {
+    echo "Detectant interfícies de xarxa físiques de l'anfitrió per a configurar el mode pont..."
+
+    # Obtenim tots els noms de les interfícies bridgeables i filtrem les físiques
+    # (Ethernet i WiFi) comprovant si tenen un dispositiu de maquinari real a sysfs.
+    # Això exclou interfícies virtuals com docker0, br-*, virbr*, veth*, etc.
+    local all_interfaces physical_interfaces
+    all_interfaces=$(VBoxManage list bridgedifs | grep '^Name:' | cut -d: -f2 | sed 's/^[[:space:]]*//')
+
+    physical_interfaces=""
+    while IFS= read -r iface; do
+        if [[ -n "${iface}" && -e "/sys/class/net/${iface}/device" ]]; then
+            physical_interfaces+="${iface}"$'\n'
+        fi
+    done <<< "${all_interfaces}"
+
+    if [[ -z "${physical_interfaces}" ]]; then
+        echo "Avís: No s'ha detectat cap interfície física per a configurar el mode pont."
+        return
+    fi
+
+    local i=1
+    while IFS= read -r iface; do
+        if [[ -n "${iface}" ]]; then
+            echo "Configurant adaptador de xarxa ${i} en mode pont sobre '${iface}'..."
+            VBoxManage modifyvm "${VM_NAME}" --nic${i} bridged --bridgeadapter${i} "${iface}"
+            ((i++))
+        fi
+
+        # VirtualBox suporta fins a 8 adaptadors de xarxa per defecte via CLI
+        if [ $i -gt 8 ]; then
+            echo "Avís: S'ha arribat al límit de 8 adaptadors de xarxa. Ignorant la resta d'interfícies."
+            break
+        fi
+    done <<< "${physical_interfaces}"
 }
 
 create_snapshot() {
@@ -103,6 +140,7 @@ main() {
     echo "RAM total detectada: $(( half_ram_mb * 2 )) MB → assignant ${half_ram_mb} MB a '${VM_NAME}'."
 
     set_vm_memory "${half_ram_mb}"
+    configure_bridged_networks
     create_snapshot
     start_vm "${headless}"
 
