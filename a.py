@@ -88,7 +88,10 @@ def list_tasks():
         print(f"  {keyword}  ->  {script}")
 
 
-def run_task(keyword):
+def run_task(keyword, script_args=None):
+    if script_args is None:
+        script_args = []
+
     tasks = load_tasks()
     if keyword not in tasks:
         print(f"Error: no existe ninguna tarea con la palabra clave '{keyword}'")
@@ -98,33 +101,53 @@ def run_task(keyword):
     if not os.path.isfile(path):
         print(f"Error: el script '{path}' ya no existe")
         sys.exit(1)
-    os.execvp("bash", ["bash", path])
+    os.execvp("bash", ["bash", path, *script_args])
+
+
+def build_parser():
+    parser = argparse.ArgumentParser(description="Gestor de tareas automatizadas")
+    subparsers = parser.add_subparsers(dest="command")
+
+    add_parser = subparsers.add_parser("add", help="Registra un script con una palabra clave")
+    add_parser.add_argument("script", help="Ruta o nombre del script")
+    add_parser.add_argument("keyword", help="Palabra clave para ejecutar la tarea")
+
+    subparsers.add_parser("list", help="Lista todas las tareas registradas")
+
+    remove_parser = subparsers.add_parser("remove", help="Elimina una tarea registrada")
+    remove_parser.add_argument("keyword", help="Palabra clave de la tarea")
+
+    run_parser = subparsers.add_parser("run", help="Ejecuta una tarea registrada")
+    run_parser.add_argument("keyword", help="Palabra clave de la tarea")
+    run_parser.add_argument("script_args", nargs=argparse.REMAINDER,
+                            help="Argumentos extra para el script")
+
+    return parser
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Gestor de tareas automatizadas"
-    )
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument("--add", nargs=2, metavar=("SCRIPT", "PALABRA_CLAVE"),
-                       help="Registra un script con una palabra clave")
-    group.add_argument("--remove", metavar="PALABRA_CLAVE",
-                       help="Elimina una tarea registrada")
-    group.add_argument("--list", action="store_true",
-                       help="Lista todas las tareas registradas")
-    parser.add_argument("keyword", nargs="?",
-                        help="Palabra clave de la tarea a ejecutar")
+    parser = build_parser()
+    argv = sys.argv[1:]
 
-    args = parser.parse_args()
+    if not argv:
+        parser.print_help()
+        return
 
-    if args.add:
-        add_task(args.add[0], args.add[1])
-    elif args.remove:
-        remove_task(args.remove)
-    elif args.list:
+    known_commands = {"add", "list", "remove", "run", "-h", "--help"}
+    if argv[0] not in known_commands and not argv[0].startswith("-"):
+        run_task(argv[0], argv[1:])
+        return
+
+    args = parser.parse_args(argv)
+
+    if args.command == "add":
+        add_task(args.script, args.keyword)
+    elif args.command == "remove":
+        remove_task(args.keyword)
+    elif args.command == "list":
         list_tasks()
-    elif args.keyword:
-        run_task(args.keyword)
+    elif args.command == "run":
+        run_task(args.keyword, args.script_args)
     else:
         parser.print_help()
 

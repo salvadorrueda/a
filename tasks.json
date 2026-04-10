@@ -1,3 +1,4 @@
 {
-  "vm": "launch_vu01.sh"
+  "vm": "launch_vu01.sh",
+  "actualitza_git": "git_add_commit_push.sh"
 }
