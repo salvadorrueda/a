@@ -26,5 +26,9 @@
   "atura_d00": {
     "script": "atura_d00.sh",
     "info": "Atura la màquina d00"
+  },
+  "agenda": {
+    "script": "agenda.sh",
+    "info": "Obre Agenda de GoogleDocs al firefox"
   }
 }
