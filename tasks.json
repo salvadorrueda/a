@@ -34,5 +34,9 @@
   "ieduca": {
     "script": "ieduca.sh",
     "info": "Obre Ieduca al Google Chrome"
+  },
+  "insta_docker_Debian": {
+    "script": "install_docker_Debian.sh",
+    "info": "Instal·la docker a Debian"
   }
 }
