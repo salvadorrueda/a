@@ -30,5 +30,9 @@
   "agenda": {
     "script": "agenda.sh",
     "info": "Obre Agenda de GoogleDocs al firefox"
+  },
+  "ieduca": {
+    "script": "ieduca.sh",
+    "info": "Obre Ieduca al Google Chrome"
   }
 }
