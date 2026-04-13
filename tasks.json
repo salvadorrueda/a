@@ -38,5 +38,9 @@
   "insta_docker_Debian": {
     "script": "install_docker_Debian.sh",
     "info": "Instal·la docker a Debian"
+  },
+  "agenda_escolar": {
+    "script": "agenda_escolar.sh",
+    "info": "Obre l'agenda escolar al Google Chrome"
   }
 }
