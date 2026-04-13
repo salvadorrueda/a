@@ -42,5 +42,9 @@
   "agenda_escolar": {
     "script": "agenda_escolar.sh",
     "info": "Obre l'agenda escolar al Google Chrome"
+  },
+  "whatsapp": {
+    "script": "whatsapp.sh",
+    "info": "Obre el Whatapp web al firefox"
   }
 }
