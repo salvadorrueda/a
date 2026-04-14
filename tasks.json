@@ -50,5 +50,9 @@
   "code_a": {
     "script": "code_a.sh",
     "info": "Obre a Visual Studio Code"
+  },
+  "python_venv": {
+    "script": "python_venv.sh",
+    "info": "Crea un entorn virual amb Python"
   }
 }
