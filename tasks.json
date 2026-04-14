@@ -46,5 +46,9 @@
   "whatsapp": {
     "script": "whatsapp.sh",
     "info": "Obre el Whatapp web al firefox"
+  },
+  "code_a": {
+    "script": "code_a.sh",
+    "info": "Obre a Visual Studio Code"
   }
 }
