@@ -3,4 +3,6 @@
 
 set -euo pipefail
 
+git -C /home/salvadorrueda/Developer/GitHub/a pull
+
 code /home/salvadorrueda/Developer/GitHub/a
